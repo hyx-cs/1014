@@ -20,63 +20,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 下载 Android SDK 命令行工具
+      - name: 设置 Android SDK
         run: |
-          set -e
-          echo "::group::下载 cmdline-tools"
-          curl -sL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
-            -o /tmp/cmdline-tools.zip
-          ls -lh /tmp/cmdline-tools.zip
-          echo "::endgroup::"
+          # 使用 GitHub Runner 预装的 Android SDK
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          # 清除冲突的 ANDROID_SDK_ROOT
+          echo "ANDROID_SDK_ROOT=" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-          echo "::group::解压并设置目录结构"
-          mkdir -p /tmp/cmdline-extract
-          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-extract
-          ls -la /tmp/cmdline-extract/
-          # cmdline-tools zip 解压后有 cmdline-tools/ 子目录
-          mkdir -p ${ANDROID_HOME:-$HOME/Android/Sdk}/cmdline-tools/latest
-          if [ -d /tmp/cmdline-extract/cmdline-tools ]; then
-            mv /tmp/cmdline-extract/cmdline-tools/* ${ANDROID_HOME:-$HOME/Android/Sdk}/cmdline-tools/latest/
-          else
-            mv /tmp/cmdline-extract/* ${ANDROID_HOME:-$HOME/Android/Sdk}/cmdline-tools/latest/
-          fi
-          echo "::endgroup::"
+          # 接受许可
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
 
-      - name: 设置环境变量
-        run: |
-          echo "ANDROID_HOME=$HOME/Android/Sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/Android/Sdk" >> $GITHUB_ENV
-          echo "$HOME/Android/Sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$HOME/Android/Sdk/platform-tools" >> $GITHUB_PATH
-
-      - name: 安装 Android SDK 组件
-        run: |
-          set -e
-          export ANDROID_HOME=$HOME/Android/Sdk
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
-
-          echo "SDK 路径: $ANDROID_HOME"
-          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/
-
-          echo "::group::接受 SDK 许可"
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          echo "::endgroup::"
-
-          echo "::group::安装平台和构建工具"
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME \
+          # 安装需要的 SDK 组件（如果还没有）
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
             "platforms;android-34" \
             "build-tools;34.0.0" \
-            "platform-tools"
-          echo "::endgroup::"
+            "platform-tools" 2>&1 | tail -5
 
-          echo "::group::验证安装"
-          ls -la $ANDROID_HOME/platforms/
-          ls -la $ANDROID_HOME/build-tools/
-          echo "::endgroup::"
+          echo "SDK 就绪: $ANDROID_HOME"
 
       - name: 安装 Gradle
         run: |
-          set -e
           curl -sL "https://services.gradle.org/distributions/gradle-8.7-bin.zip" \
             -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
@@ -84,13 +50,12 @@ jobs:
 
       - name: 构建 APK
         run: |
-          set -e
+          # 确保只使用 ANDROID_HOME
+          unset ANDROID_SDK_ROOT
           echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "JAVA_HOME=$JAVA_HOME"
           gradle assembleDebug --stacktrace
 
       - name: 上传 APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: DeepSeekWidget-debug
