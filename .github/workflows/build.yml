@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -22,20 +22,15 @@ jobs:
 
       - name: 安装 Android SDK
         run: |
-          # 下载 cmdline-tools
           curl -sL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
             -o /tmp/cmdline-tools.zip
           unzip -q /tmp/cmdline-tools.zip -d /tmp
           mkdir -p $HOME/Android/Sdk/cmdline-tools/latest
           mv /tmp/cmdline-tools/* $HOME/Android/Sdk/cmdline-tools/latest/
-
-          # 设置环境变量
           export ANDROID_HOME=$HOME/Android/Sdk
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-
-          # 接受许可并安装 SDK 组件
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
             "platforms;android-34" \
