@@ -1,12 +1,13 @@
 package com.example.deepseekwidget.worker
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.work.*
-import com.example.deepseekwidget.DeepSeekWidget
 import com.example.deepseekwidget.DeepSeekWidgetStateDefinition
+import com.example.deepseekwidget.R
 import com.example.deepseekwidget.WidgetState
 import com.example.deepseekwidget.network.ApiException
 import com.example.deepseekwidget.network.DeepSeekApiService
@@ -29,7 +30,7 @@ class BalanceRefreshWorker(
                 applicationContext,
                 WidgetState(isLoading = false, errorMessage = "API Key not set")
             )
-            notifyWidget(applicationContext)
+            updateWidgets(applicationContext)
             return Result.failure()
         }
 
@@ -37,7 +38,7 @@ class BalanceRefreshWorker(
             apiService.getBalance(apiKey)
         }
 
-        return result.fold(
+        result.fold(
             onSuccess = { response ->
                 val info = response.balanceInfos.firstOrNull()
                 DeepSeekWidgetStateDefinition.writeState(
@@ -53,7 +54,7 @@ class BalanceRefreshWorker(
                         lastUpdated = System.currentTimeMillis()
                     )
                 )
-                notifyWidget(applicationContext)
+                updateWidgets(applicationContext)
                 Result.success()
             },
             onFailure = { error ->
@@ -66,19 +67,25 @@ class BalanceRefreshWorker(
                             ?: error.message ?: "Unknown error"
                     )
                 )
-                notifyWidget(applicationContext)
+                updateWidgets(applicationContext)
                 Result.retry()
             }
         )
     }
 
-    private suspend fun notifyWidget(context: Context) {
+    private fun updateWidgets(context: Context) {
         try {
-            val manager = GlanceAppWidgetManager(context)
-            val glanceIds = manager.getGlanceIds(DeepSeekWidget::class.java)
-            glanceIds.forEach { DeepSeekWidget().update(context, it) }
-        } catch (_: Exception) {
-        }
+            val manager = AppWidgetManager.getInstance(context)
+            val component = ComponentName(context, com.example.deepseekwidget.DeepSeekWidgetReceiver::class.java)
+            val ids = manager.getAppWidgetIds(component)
+            if (ids.isNotEmpty()) {
+                val intent = android.content.Intent(context, com.example.deepseekwidget.DeepSeekWidgetReceiver::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                }
+                context.sendBroadcast(intent)
+            }
+        } catch (_: Exception) {}
     }
 
     private fun getApiKey(context: Context): String? {
@@ -94,9 +101,7 @@ class BalanceRefreshWorker(
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
             prefs.getString(KEY_API_KEY, null)
-        } catch (_: Exception) {
-            null
-        }
+        } catch (_: Exception) { null }
     }
 
     companion object {
@@ -113,9 +118,7 @@ class BalanceRefreshWorker(
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK_NAME_PERIODIC,
-                ExistingPeriodicWorkPolicy.KEEP,
-                request
+                WORK_NAME_PERIODIC, ExistingPeriodicWorkPolicy.KEEP, request
             )
         }
 
@@ -128,10 +131,6 @@ class BalanceRefreshWorker(
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                 .build()
             WorkManager.getInstance(context).enqueue(request)
-        }
-
-        fun cancel(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME_PERIODIC)
         }
     }
 }
