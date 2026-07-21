@@ -12,34 +12,20 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.currentState
 import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.unit.FontSize
-import androidx.glance.unit.dp
+import androidx.glance.unit.Dp
 import com.example.deepseekwidget.ui.GlassColors
 
-/**
- * DeepSeek 余额桌面小组件 — Glance 实现。
- *
- * 使用 Jetpack Glance 声明式 UI 渲染。
- * 状态来源于 [DeepSeekWidgetStateDefinition] DataStore，
- * 由 [BalanceRefreshWorker] 在后台更新。
- *
- * 视觉设计: iOS 毛玻璃风格 (Glass Morphism)
- * - 半透明白色背景叠加多层渐变 (widget_background.xml)
- * - 细腻边框模拟玻璃折光
- * - 顶部高光模拟光源反射
- */
 class DeepSeekWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             GlanceTheme {
-                val state = currentState(DeepSeekWidgetStateDefinition)
+                val state = DeepSeekWidgetStateDefinition.readState(context)
                 WidgetContent(
                     state = state,
                     onRefreshAction = actionRunCallback<RefreshCallback>()
@@ -49,105 +35,76 @@ class DeepSeekWidget : GlanceAppWidget() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // 主布局
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 @Composable
-private fun WidgetContent(
-    state: WidgetState,
-    onRefreshAction: Action
-) {
+private fun WidgetContent(state: WidgetState, onRefreshAction: Action) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(R.drawable.widget_background)
-            .cornerRadius(24.dp)
-            .padding(16.dp)
+            .cornerRadius(Dp(24f))
+            .padding(Dp(16f))
     ) {
         Column(
             modifier = GlanceModifier.fillMaxSize(),
-            verticalAlignment = VerticalAlignment.Top
+            verticalAlignment = Alignment.Vertical.Top
         ) {
-            // ── 标题行 ──────────────────────────
-            HeaderRow(
-                isLoading = state.isLoading,
-                isAvailable = state.isAvailable
-            )
+            HeaderRow(state.isLoading, state.isAvailable)
+            Spacer(GlanceModifier.height(Dp(10f)))
 
-            Spacer(modifier = GlanceModifier.height(10.dp))
-
-            // ── 余额主体区域 ────────────────────
             when {
                 state.isLoading -> LoadingContent()
                 state.errorMessage != null && state.totalBalance.isEmpty() ->
-                    ErrorContent(state.errorMessage ?: "未知错误")
+                    ErrorContent(state.errorMessage ?: "Error")
                 else -> BalanceContent(state)
             }
 
-            Spacer(modifier = GlanceModifier.defaultWeight())
+            Spacer(GlanceModifier.defaultWeight())
 
-            // ── 底部状态栏 ──────────────────────
-            BottomRow(
-                isAvailable = state.isAvailable,
-                isLoading = state.isLoading,
-                hasData = state.totalBalance.isNotEmpty(),
-                errorMessage = state.errorMessage,
-                onRefreshAction = onRefreshAction
-            )
+            BottomRow(state, onRefreshAction)
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // 子组件
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 
 @Composable
 private fun HeaderRow(isLoading: Boolean, isAvailable: Boolean) {
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = HorizontalAlignment.SpaceBetween,
-        verticalAlignment = VerticalAlignment.CenterVertically
+        horizontalAlignment = Alignment.Horizontal.SpaceBetween,
+        verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
         Text(
             text = "🔷 DeepSeek API",
             style = TextStyle(
                 color = GlassColors.textPrimary,
-                fontSize = FontSize(13f),
                 fontWeight = FontWeight.Medium
             )
         )
-        // 状态指示灯
-        val (dot, label) = when {
-            isLoading -> "⏳" to "同步中"
-            isAvailable -> "🟢" to "在线"
-            else -> "🔴" to "离线"
+        val label = when {
+            isLoading -> "⏳ sync..."
+            isAvailable -> "🟢 online"
+            else -> "🔴 offline"
         }
-        Text(
-            text = "$dot $label",
-            style = TextStyle(
-                color = GlassColors.textTertiary,
-                fontSize = FontSize(11f)
-            )
-        )
+        Text(text = label, style = TextStyle(color = GlassColors.textTertiary))
     }
 }
 
 @Composable
 private fun LoadingContent() {
     Column(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalAlignment = HorizontalAlignment.Center
+        modifier = GlanceModifier.fillMaxWidth().padding(Dp(12f)),
+        horizontalAlignment = Alignment.Horizontal.Center
     ) {
         Text(
-            text = "⏳ 加载中…",
-            style = TextStyle(
-                color = GlassColors.statusLoading,
-                fontSize = FontSize(14f)
-            )
+            text = "⏳ Loading...",
+            style = TextStyle(color = GlassColors.statusLoading)
         )
     }
 }
@@ -155,22 +112,14 @@ private fun LoadingContent() {
 @Composable
 private fun ErrorContent(message: String) {
     Column(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalAlignment = HorizontalAlignment.Center
+        modifier = GlanceModifier.fillMaxWidth().padding(Dp(12f)),
+        horizontalAlignment = Alignment.Horizontal.Center
     ) {
-        Text(
-            text = "⚠️",
-            style = TextStyle(fontWeight = FontWeight.Bold)
-        )
-        Spacer(modifier = GlanceModifier.height(4.dp))
+        Text(text = "⚠️", style = TextStyle(fontWeight = FontWeight.Bold))
+        Spacer(GlanceModifier.height(Dp(4f)))
         Text(
             text = message,
-            style = TextStyle(
-                color = GlassColors.textSecondary,
-                fontSize = FontSize(13f)
-            ),
+            style = TextStyle(color = GlassColors.textSecondary),
             maxLines = 2
         )
     }
@@ -178,53 +127,37 @@ private fun ErrorContent(message: String) {
 
 @Composable
 private fun BalanceContent(state: WidgetState) {
-    val symbol = when (state.currency) {
-        "USD" -> "$"
-        else -> "¥"
-    }
+    val symbol = if (state.currency == "USD") "$" else "¥"
 
     Column(
         modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = HorizontalAlignment.Center
+        horizontalAlignment = Alignment.Horizontal.Center
     ) {
-        // 大号余额数字
         Text(
             text = "$symbol ${state.totalBalance}",
             style = TextStyle(
                 color = GlassColors.textPrimary,
-                fontSize = FontSize(32f),
                 fontWeight = FontWeight.Bold
             )
         )
-        Spacer(modifier = GlanceModifier.height(2.dp))
-        Text(
-            text = "总余额",
-            style = TextStyle(
-                color = GlassColors.textTertiary,
-                fontSize = FontSize(12f)
-            )
-        )
+        Spacer(GlanceModifier.height(Dp(2f)))
+        Text(text = "Balance", style = TextStyle(color = GlassColors.textTertiary))
 
-        Spacer(modifier = GlanceModifier.height(12.dp))
+        Spacer(GlanceModifier.height(Dp(12f)))
 
-        // 细分信息：赠金 / 充值
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
-            horizontalAlignment = HorizontalAlignment.SpaceEvenly
+            horizontalAlignment = Alignment.Horizontal.SpaceEvenly
         ) {
-            BalanceChip(label = "赠金", amount = state.grantedBalance, symbol = symbol)
-            BalanceChip(label = "充值", amount = state.toppedUpBalance, symbol = symbol)
+            BalanceChip("Granted", state.grantedBalance, symbol)
+            BalanceChip("Top-up", state.toppedUpBalance, symbol)
         }
 
-        // 最后更新时间
-        if (state.lastUpdated > 0) {
-            Spacer(modifier = GlanceModifier.height(8.dp))
+        if (state.lastUpdated > 0L) {
+            Spacer(GlanceModifier.height(Dp(8f)))
             Text(
                 text = formatLastUpdated(state.lastUpdated),
-                style = TextStyle(
-                    color = GlassColors.textTertiary,
-                    fontSize = FontSize(10f)
-                ),
+                style = TextStyle(color = GlassColors.textTertiary),
                 maxLines = 1
             )
         }
@@ -236,100 +169,69 @@ private fun BalanceChip(label: String, amount: String, symbol: String) {
     Column(
         modifier = GlanceModifier
             .background(GlassColors.itemBackground)
-            .cornerRadius(12.dp)
-            .padding(horizontal = 14.dp, vertical = 6.dp),
-        horizontalAlignment = HorizontalAlignment.Center
+            .cornerRadius(Dp(12f))
+            .padding(horizontal = Dp(14f), vertical = Dp(6f)),
+        horizontalAlignment = Alignment.Horizontal.Center
     ) {
         Text(
             text = "$symbol $amount",
             style = TextStyle(
                 color = GlassColors.textPrimary,
-                fontSize = FontSize(15f),
                 fontWeight = FontWeight.Medium
             )
         )
-        Spacer(modifier = GlanceModifier.height(1.dp))
-        Text(
-            text = label,
-            style = TextStyle(
-                color = GlassColors.textTertiary,
-                fontSize = FontSize(11f)
-            )
-        )
+        Spacer(GlanceModifier.height(Dp(1f)))
+        Text(text = label, style = TextStyle(color = GlassColors.textTertiary))
     }
 }
 
 @Composable
-private fun BottomRow(
-    isAvailable: Boolean,
-    isLoading: Boolean,
-    hasData: Boolean,
-    errorMessage: String?,
-    onRefreshAction: Action
-) {
+private fun BottomRow(state: WidgetState, onRefreshAction: Action) {
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = HorizontalAlignment.SpaceBetween,
-        verticalAlignment = VerticalAlignment.CenterVertically
+        horizontalAlignment = Alignment.Horizontal.SpaceBetween,
+        verticalAlignment = Alignment.Vertical.CenterVertically
     ) {
-        // 左侧：可用状态文字
         when {
-            isLoading -> Text(
-                text = "⏳ 查询中",
-                style = TextStyle(
-                    color = GlassColors.textTertiary,
-                    fontSize = FontSize(11f)
-                )
+            state.isLoading -> Text(
+                text = "⏳ Syncing",
+                style = TextStyle(color = GlassColors.textTertiary)
             )
-            hasData && errorMessage != null -> Text(
-                text = "⚠️ 显示缓存",
-                style = TextStyle(
-                    color = GlassColors.statusLoading,
-                    fontSize = FontSize(11f)
-                )
+            state.hasData && state.errorMessage != null -> Text(
+                text = "⚠️ Cached",
+                style = TextStyle(color = GlassColors.statusLoading)
             )
-            hasData -> Text(
-                text = if (isAvailable) "✅ 可用" else "❌ 不可用",
+            state.hasData -> Text(
+                text = if (state.isAvailable) "✅ Active" else "❌ Inactive",
                 style = TextStyle(
-                    color = if (isAvailable) GlassColors.statusAvailable
+                    color = if (state.isAvailable) GlassColors.statusAvailable
                     else GlassColors.statusUnavailable,
-                    fontSize = FontSize(11f),
                     fontWeight = FontWeight.Medium
                 )
             )
             else -> Text(
-                text = "⚙️ 待配置",
-                style = TextStyle(
-                    color = GlassColors.textSecondary,
-                    fontSize = FontSize(11f)
-                )
+                text = "⚙️ Setup",
+                style = TextStyle(color = GlassColors.textSecondary)
             )
         }
 
-        // 右侧：刷新按钮
         Text(
-            text = "🔄 刷新",
+            text = "🔄 Refresh",
             modifier = GlanceModifier.clickable(onRefreshAction),
-            style = TextStyle(
-                color = GlassColors.textSecondary,
-                fontSize = FontSize(11f)
-            )
+            style = TextStyle(color = GlassColors.textSecondary)
         )
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// 工具函数
-// ═══════════════════════════════════════════════════════════════════
-
-/** 格式化最后更新时间为人类可读的相对时间 */
 private fun formatLastUpdated(timestamp: Long): String {
-    val now = System.currentTimeMillis()
-    val diff = now - timestamp
+    val diff = System.currentTimeMillis() - timestamp
     return when {
-        diff < 60_000 -> "刚刚更新"
-        diff < 3_600_000 -> "${diff / 60_000} 分钟前更新"
-        diff < 86_400_000 -> "${diff / 3_600_000} 小时前更新"
-        else -> "${diff / 86_400_000} 天前更新"
+        diff < 60_000L -> "Just now"
+        diff < 3_600_000L -> "${diff / 60_000L}m ago"
+        diff < 86_400_000L -> "${diff / 3_600_000L}h ago"
+        else -> "${diff / 86_400_000L}d ago"
     }
 }
+
+// Helpers for WidgetState
+private val WidgetState.hasData get() = totalBalance.isNotEmpty()

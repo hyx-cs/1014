@@ -48,8 +48,8 @@ dependencies {
     // OkHttp — lightweight HTTP client for DeepSeek API
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    // Kotlinx Serialization — JSON parsing
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
+    // Kotlinx Serialization — JSON parsing (1.6.3 compatible with Kotlin 1.9.24)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Security — EncryptedSharedPreferences for API key storage
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
