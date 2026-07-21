@@ -31,32 +31,24 @@ class DeepSeekWidget : GlanceAppWidget() {
     }
 }
 
-// ── 常量（避免引用不存在的 Dp / Alignment 类型）──
-private val PAD = 16
-private val PAD_H = 14
-private val PAD_V = 6
-private val GAP = 10
-private val GAP_SM = 2
-private val GAP_XS = 1
-private val GAP_MD = 12
-private val GAP_LG = 8
-private val RADIUS = 24
-private val RADIUS_SM = 12
+// ── 毛玻璃模拟背景色 ──
+private val GLASS_BG = ColorProvider(0x26FFFFFF.toInt())
+private val GLASS_BORDER = ColorProvider(0x40FFFFFF.toInt())
 
 @Composable
 private fun WidgetContent(state: WidgetState, onRefresh: Action) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(R.drawable.widget_background)
-            .cornerRadius(RADIUS)
-            .padding(PAD)
+            .background(GLASS_BG)
+            .cornerRadius(24)
+            .padding(16)
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             HeaderRow(state)
-            Spacer(GlanceModifier.height(GAP))
+            Box(GlanceModifier.height(10)) {}
             BodySection(state)
-            Spacer(GlanceModifier.defaultWeight())
+            Box(GlanceModifier.defaultWeight()) {}
             BottomRow(state, onRefresh)
         }
     }
@@ -92,16 +84,16 @@ private fun BodySection(state: WidgetState) {
 
 @Composable
 private fun LoadingBlock() {
-    Box(modifier = GlanceModifier.fillMaxWidth().padding(GAP_MD)) {
+    Box(modifier = GlanceModifier.fillMaxWidth().padding(12)) {
         Text("⏳ Loading...", style = TextStyle(color = GlassColors.statusLoading))
     }
 }
 
 @Composable
 private fun ErrorBlock(message: String) {
-    Column(modifier = GlanceModifier.fillMaxWidth().padding(GAP_MD)) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(12)) {
         Text("⚠️", style = TextStyle(fontWeight = FontWeight.Bold))
-        Spacer(GlanceModifier.height(GAP_XS + 3))
+        Box(GlanceModifier.height(4)) {}
         Text(message, style = TextStyle(color = GlassColors.textSecondary), maxLines = 2)
     }
 }
@@ -111,33 +103,28 @@ private fun BalanceBlock(state: WidgetState) {
     val symbol = if (state.currency == "USD") "$" else "¥"
 
     Column(modifier = GlanceModifier.fillMaxWidth()) {
-        // 余额数字
         Box(modifier = GlanceModifier.fillMaxWidth()) {
             Text(
                 text = "$symbol ${state.totalBalance}",
                 style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Bold)
             )
         }
-        Spacer(GlanceModifier.height(GAP_SM))
+        Box(GlanceModifier.height(2)) {}
         Box(modifier = GlanceModifier.fillMaxWidth()) {
             Text("Balance", style = TextStyle(color = GlassColors.textTertiary))
         }
-
-        Spacer(GlanceModifier.height(GAP_MD))
-
-        // 细分
+        Box(GlanceModifier.height(12)) {}
         Row(modifier = GlanceModifier.fillMaxWidth()) {
             Box(GlanceModifier.defaultWeight()) {
                 BalanceChip("Granted", state.grantedBalance, symbol)
             }
-            Spacer(GlanceModifier.width(GAP_MD))
+            Box(GlanceModifier.width(12)) {}
             Box(GlanceModifier.defaultWeight()) {
                 BalanceChip("Top-up", state.toppedUpBalance, symbol)
             }
         }
-
         if (state.lastUpdated > 0L) {
-            Spacer(GlanceModifier.height(GAP_LG))
+            Box(GlanceModifier.height(8)) {}
             Box(modifier = GlanceModifier.fillMaxWidth()) {
                 Text(
                     text = formatLastUpdated(state.lastUpdated),
@@ -155,15 +142,15 @@ private fun BalanceChip(label: String, amount: String, symbol: String) {
         modifier = GlanceModifier
             .fillMaxWidth()
             .background(GlassColors.itemBackground)
-            .cornerRadius(RADIUS_SM)
-            .padding(horizontal = PAD_H, vertical = PAD_V)
+            .cornerRadius(12)
+            .padding(horizontal = 14, vertical = 6)
     ) {
         Column(modifier = GlanceModifier.fillMaxWidth()) {
             Text(
                 text = "$symbol $amount",
                 style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium)
             )
-            Spacer(GlanceModifier.height(GAP_XS))
+            Box(GlanceModifier.height(1)) {}
             Text(label, style = TextStyle(color = GlassColors.textTertiary))
         }
     }
