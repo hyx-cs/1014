@@ -29,43 +29,57 @@ class DeepSeekWidgetReceiver : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, R.layout.widget_layout)
         val symbol = if (state.currency == "USD") "$" else "¥"
 
-        if (state.isLoading) {
-            views.setTextViewText(R.id.widget_title, "DeepSeek API")
-            views.setTextViewText(R.id.widget_balance, "⏳ Loading...")
-            views.setTextViewText(R.id.widget_detail, "")
-            views.setTextViewText(R.id.widget_status, "Syncing...")
-        } else if (state.hasError && !state.hasData) {
-            views.setTextViewText(R.id.widget_title, "🔷 DeepSeek API")
-            views.setTextViewText(R.id.widget_balance, "⚠️ Error")
-            views.setTextViewText(R.id.widget_detail, state.errorMessage ?: "")
-            views.setTextViewText(R.id.widget_status, "Check Key")
-        } else if (state.hasData) {
-            views.setTextViewText(R.id.widget_title, "🔷 DeepSeek API")
-            views.setTextViewText(R.id.widget_balance, "$symbol ${state.totalBalance}")
-            views.setTextViewText(
-                R.id.widget_detail,
-                "Granted: $symbol ${state.grantedBalance}  |  Top-up: $symbol ${state.toppedUpBalance}"
-            )
-            views.setTextViewText(
-                R.id.widget_status,
-                if (state.isAvailable) "✅ Active" else "❌ Inactive"
-            )
-        } else {
-            views.setTextViewText(R.id.widget_title, "🔷 DeepSeek API")
-            views.setTextViewText(R.id.widget_balance, "Setup")
-            views.setTextViewText(R.id.widget_detail, "Add widget & enter Key")
-            views.setTextViewText(R.id.widget_status, "Ready")
+        when {
+            state.isLoading -> {
+                views.setTextViewText(R.id.widget_title, "DeepSeek API")
+                views.setTextViewText(R.id.widget_balance, "⏳")
+                views.setTextViewText(R.id.widget_status, "Loading")
+                views.setTextViewText(R.id.widget_granted, "--")
+                views.setTextViewText(R.id.widget_topped_up, "--")
+                views.setTextViewText(R.id.widget_refresh_icon, "⏳")
+                views.setTextViewText(R.id.widget_refresh_text, "Syncing...")
+            }
+            state.hasError && !state.hasData -> {
+                views.setTextViewText(R.id.widget_title, "DeepSeek API")
+                views.setTextViewText(R.id.widget_balance, "⚠️")
+                views.setTextViewText(R.id.widget_status, state.errorMessage ?: "Error")
+                views.setTextViewText(R.id.widget_granted, "--")
+                views.setTextViewText(R.id.widget_topped_up, "--")
+                views.setTextViewText(R.id.widget_refresh_icon, "🔄")
+                views.setTextViewText(R.id.widget_refresh_text, "Retry")
+            }
+            state.hasData -> {
+                views.setTextViewText(R.id.widget_title, "🔷 DeepSeek API")
+                views.setTextViewText(R.id.widget_balance, "$symbol ${state.totalBalance}")
+                views.setTextViewText(
+                    R.id.widget_status,
+                    if (state.isAvailable) "🟢 Active" else "🔴 Inactive"
+                )
+                views.setTextViewText(R.id.widget_granted, "$symbol ${state.grantedBalance}")
+                views.setTextViewText(R.id.widget_topped_up, "$symbol ${state.toppedUpBalance}")
+                views.setTextViewText(R.id.widget_refresh_icon, "🔄")
+                views.setTextViewText(R.id.widget_refresh_text, "Refresh")
+            }
+            else -> {
+                views.setTextViewText(R.id.widget_title, "🔷 DeepSeek API")
+                views.setTextViewText(R.id.widget_balance, "Setup")
+                views.setTextViewText(R.id.widget_status, "Ready")
+                views.setTextViewText(R.id.widget_granted, "--")
+                views.setTextViewText(R.id.widget_topped_up, "--")
+                views.setTextViewText(R.id.widget_refresh_icon, "🔑")
+                views.setTextViewText(R.id.widget_refresh_text, "Add Key")
+            }
         }
 
-        // 刷新按钮
-        val intent = Intent(context, DeepSeekWidgetReceiver::class.java).apply {
+        // 刷新按钮点击
+        val refreshIntent = Intent(context, DeepSeekWidgetReceiver::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
         }
         views.setOnClickPendingIntent(
             R.id.widget_refresh,
             PendingIntent.getBroadcast(
-                context, widgetId, intent,
+                context, widgetId, refreshIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )

@@ -1,55 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- DeepSeek 余额小组件 —— iOS 毛玻璃风格 3x3 正方形 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#33000000"
-    android:padding="12dp">
+    android:gravity="center"
+    android:background="@drawable/widget_glass_bg"
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/widget_title"
-        android:layout_width="wrap_content"
+    <!-- 标题行 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="DeepSeek API"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔷 DeepSeek API"
+            android:textColor="#E6FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ready"
+            android:textColor="#B3FFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- 弹性空间 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 余额数字 -->
     <TextView
         android:id="@+id/widget_balance"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Setup Required"
+        android:text="¥ --.--"
         android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:textSize="32sp"
         android:textStyle="bold"
-        android:layout_marginTop="6dp" />
+        android:gravity="center"
+        android:fontFamily="sans-serif-light" />
 
+    <!-- 标签 -->
     <TextView
-        android:id="@+id/widget_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter API Key to start"
-        android:textColor="#99FFFFFF"
+        android:text="Balance"
+        android:textColor="#80FFFFFF"
         android:textSize="11sp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginTop="2dp" />
 
-    <TextView
-        android:id="@+id/widget_status"
-        android:layout_width="wrap_content"
+    <!-- 弹性空间 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 细分信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ready"
-        android:textColor="#99FFFFFF"
-        android:textSize="11sp"
-        android:layout_marginTop="4dp" />
+        android:orientation="horizontal"
+        android:gravity="center">
 
-    <TextView
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="#1AFFFFFF"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Granted"
+                android:textColor="#80FFFFFF"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/widget_granted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#E6FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View android:layout_width="8dp" android:layout_height="1dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="#1AFFFFFF"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Top-up"
+                android:textColor="#80FFFFFF"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/widget_topped_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#E6FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 弹性空间 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 大刷新按钮 -->
+    <LinearLayout
         android:id="@+id/widget_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Refresh"
-        android:textColor="#66FFFFFF"
-        android:textSize="11sp"
-        android:layout_marginTop="6dp" />
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#1AFFFFFF"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:id="@+id/widget_refresh_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔄"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/widget_refresh_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refresh"
+            android:textColor="#B3FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginLeft="6dp" />
+    </LinearLayout>
 
 </LinearLayout>
