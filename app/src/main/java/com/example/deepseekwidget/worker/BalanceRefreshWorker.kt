@@ -38,7 +38,7 @@ class BalanceRefreshWorker(
             apiService.getBalance(apiKey)
         }
 
-        result.fold(
+        return result.fold(
             onSuccess = { response ->
                 val info = response.balanceInfos.firstOrNull()
                 DeepSeekWidgetStateDefinition.writeState(
