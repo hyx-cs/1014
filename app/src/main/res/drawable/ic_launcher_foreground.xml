@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 启动器图标前景：DeepSeek 蓝色几何标志 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="22"
+        android:translateY="22">
+        <!-- 外圆环 -->
+        <path
+            android:fillColor="#4A90D9"
+            android:pathData="M32,2A30,30 0,1 0,62 2A30,30 0,1 0,32 2Z" />
+        <!-- 内圆 -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M32,12A20,20 0,1 0,52 12A20,20 0,1 0,32 12Z" />
+        <!-- D 字母简化图形 -->
+        <path
+            android:fillColor="#4A90D9"
+            android:pathData="M22,20L22,44L38,44Q46,44 46,36L46,28Q46,20 38,20ZM27,25L37,25Q40,25 40,28L40,36Q40,39 37,39L27,39Z" />
+    </group>
+</vector>

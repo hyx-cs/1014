@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DeepSeek 余额</string>
+    <string name="widget_description">在桌面查看 DeepSeek API 实时余额，毛玻璃外观</string>
+
+    <!-- 配置页 -->
+    <string name="config_title">配置 API Key</string>
+    <string name="api_key_label">DeepSeek API Key</string>
+    <string name="api_key_hint">输入你的 DeepSeek API Key (sk-…)</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+
+    <!-- 小组件显示 -->
+    <string name="total_balance">总余额</string>
+    <string name="granted_balance">赠金</string>
+    <string name="topped_up_balance">充值</string>
+    <string name="available">可用</string>
+    <string name="unavailable">不可用</string>
+    <string name="loading">加载中…</string>
+    <string name="error_network">网络错误</string>
+    <string name="error_no_key">请在设置中输入 API Key</string>
+    <string name="refresh">刷新</string>
+</resources>

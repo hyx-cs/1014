@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 毛玻璃效果颜色 -->
+    <color name="glass_base">#26FFFFFF</color>        <!-- 半透明白色基底 15% -->
+    <color name="glass_border">#40FFFFFF</color>       <!-- 玻璃边框 25% -->
+    <color name="glass_highlight">#1AFFFFFF</color>    <!-- 顶部高光 10% -->
+    <color name="glass_shadow">#1A000000</color>       <!-- 柔和阴影 -->
+
+    <!-- 文字颜色 -->
+    <color name="text_primary">#E6FFFFFF</color>       <!-- 主文字 90% 白 -->
+    <color name="text_secondary">#99FFFFFF</color>     <!-- 副文字 60% 白 -->
+    <color name="text_tertiary">#66FFFFFF</color>      <!-- 辅助文字 40% 白 -->
+
+    <!-- 状态颜色 -->
+    <color name="status_available">#E64CAF50</color>   <!-- 可用 绿 -->
+    <color name="status_unavailable">#E6F44336</color> <!-- 不可用 红 -->
+    <color name="status_loading">#E6FFC107</color>     <!-- 加载中 琥珀 -->
+</resources>

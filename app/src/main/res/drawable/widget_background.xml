@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    毛玻璃效果背景 (Glass Morphism)
+    模拟 iOS 半透明模糊玻璃的视觉效果。
+    由于 App Widget 基于 RemoteViews，无法实现真正的实时模糊，
+    这里使用多层叠加来逼近毛玻璃质感：
+      1. 半透明白色基底（模拟磨砂玻璃的雾面质感）
+      2. 亮色内边框（模拟玻璃边缘的折光）
+      3. 顶部微光渐变（模拟光源在玻璃表面的反射）
+    在不同壁纸上均能保持视觉辨识度。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 第 1 层：半透明基底 + 圆角 + 柔和阴影 -->
+    <item
+        android:left="1dp"
+        android:right="1dp"
+        android:top="1dp"
+        android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/glass_shadow" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- 第 2 层：毛玻璃基底色 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/glass_base" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- 第 3 层：亮色内边框（折光效果） -->
+    <item
+        android:left="0.5dp"
+        android:right="0.5dp"
+        android:top="0.5dp"
+        android:bottom="0.5dp">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/glass_border" />
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="23.5dp" />
+        </shape>
+    </item>
+
+    <!-- 第 4 层：顶部高光渐变（模拟玻璃表面反光） -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="@color/glass_highlight"
+                android:centerColor="#08FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:centerY="0.3" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+</layer-list>
