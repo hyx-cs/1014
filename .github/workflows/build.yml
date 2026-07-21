@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:  # 允许在 GitHub Actions 页面手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,7 +23,10 @@ jobs:
       - name: 设置 Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
+          packages: |
+            platforms;android-34
+            build-tools;34.0.0
+            platform-tools
 
       - name: 安装 Gradle 8.7
         run: |
