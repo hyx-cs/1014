@@ -54,9 +54,9 @@ private fun WidgetContent(state: WidgetState, onRefresh: Action) {
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             HeaderRow(state)
-            Box(GlanceModifier.height(GAP))
+            Spacer(GlanceModifier.height(GAP))
             BodySection(state)
-            Box(GlanceModifier.defaultWeight())
+            Spacer(GlanceModifier.defaultWeight())
             BottomRow(state, onRefresh)
         }
     }
@@ -101,7 +101,7 @@ private fun LoadingBlock() {
 private fun ErrorBlock(message: String) {
     Column(modifier = GlanceModifier.fillMaxWidth().padding(GAP_MD)) {
         Text("⚠️", style = TextStyle(fontWeight = FontWeight.Bold))
-        Box(GlanceModifier.height(GAP_XS + 3))
+        Spacer(GlanceModifier.height(GAP_XS + 3))
         Text(message, style = TextStyle(color = GlassColors.textSecondary), maxLines = 2)
     }
 }
@@ -118,26 +118,26 @@ private fun BalanceBlock(state: WidgetState) {
                 style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Bold)
             )
         }
-        Box(GlanceModifier.height(GAP_SM))
+        Spacer(GlanceModifier.height(GAP_SM))
         Box(modifier = GlanceModifier.fillMaxWidth()) {
             Text("Balance", style = TextStyle(color = GlassColors.textTertiary))
         }
 
-        Box(GlanceModifier.height(GAP_MD))
+        Spacer(GlanceModifier.height(GAP_MD))
 
         // 细分
         Row(modifier = GlanceModifier.fillMaxWidth()) {
             Box(GlanceModifier.defaultWeight()) {
                 BalanceChip("Granted", state.grantedBalance, symbol)
             }
-            Box(GlanceModifier.width(GAP_MD))
+            Spacer(GlanceModifier.width(GAP_MD))
             Box(GlanceModifier.defaultWeight()) {
                 BalanceChip("Top-up", state.toppedUpBalance, symbol)
             }
         }
 
         if (state.lastUpdated > 0L) {
-            Box(GlanceModifier.height(GAP_LG))
+            Spacer(GlanceModifier.height(GAP_LG))
             Box(modifier = GlanceModifier.fillMaxWidth()) {
                 Text(
                     text = formatLastUpdated(state.lastUpdated),
@@ -163,7 +163,7 @@ private fun BalanceChip(label: String, amount: String, symbol: String) {
                 text = "$symbol $amount",
                 style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium)
             )
-            Box(GlanceModifier.height(GAP_XS))
+            Spacer(GlanceModifier.height(GAP_XS))
             Text(label, style = TextStyle(color = GlassColors.textTertiary))
         }
     }
