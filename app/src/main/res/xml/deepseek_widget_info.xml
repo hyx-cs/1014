@@ -7,5 +7,5 @@
     android:targetCellHeight="2"
     android:resizeMode="none"
     android:widgetCategory="home_screen"
-    android:widgetFeatures="reconfigurable"
-    android:configure="com.example.deepseekwidget.DeepSeekWidgetConfigActivity" />
+    android:widgetFeatures="reconfigurable" />
+<!-- 暂时去掉 configure 排查问题 -->
