@@ -13,11 +13,6 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.*
-import androidx.glance.layout.VerticalAlignment.Companion.CenterVertically
-import androidx.glance.layout.VerticalAlignment.Companion.Top
-import androidx.glance.layout.HorizontalAlignment.Companion.Center
-import androidx.glance.layout.HorizontalAlignment.Companion.SpaceBetween
-import androidx.glance.layout.HorizontalAlignment.Companion.SpaceEvenly
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -36,7 +31,17 @@ class DeepSeekWidget : GlanceAppWidget() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ── 常量（避免引用不存在的 Dp / Alignment 类型）──
+private val PAD = 16
+private val PAD_H = 14
+private val PAD_V = 6
+private val GAP = 10
+private val GAP_SM = 2
+private val GAP_XS = 1
+private val GAP_MD = 12
+private val GAP_LG = 8
+private val RADIUS = 24
+private val RADIUS_SM = 12
 
 @Composable
 private fun WidgetContent(state: WidgetState, onRefresh: Action) {
@@ -44,41 +49,26 @@ private fun WidgetContent(state: WidgetState, onRefresh: Action) {
         modifier = GlanceModifier
             .fillMaxSize()
             .background(R.drawable.widget_background)
-            .cornerRadius(24)
-            .padding(16)
+            .cornerRadius(RADIUS)
+            .padding(PAD)
     ) {
-        Column(
-            modifier = GlanceModifier.fillMaxSize(),
-            verticalAlignment = Top
-        ) {
+        Column(modifier = GlanceModifier.fillMaxSize()) {
             HeaderRow(state)
-            Spacer(GlanceModifier.height(10))
-
-            when {
-                state.isLoading -> LoadingContent()
-                state.errorMessage != null && state.totalBalance.isEmpty() ->
-                    ErrorContent(state.errorMessage ?: "Error")
-                else -> BalanceContent(state)
-            }
-
-            Spacer(GlanceModifier.defaultWeight())
+            Box(GlanceModifier.height(GAP))
+            BodySection(state)
+            Box(GlanceModifier.defaultWeight())
             BottomRow(state, onRefresh)
         }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-
 @Composable
 private fun HeaderRow(state: WidgetState) {
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = SpaceBetween,
-        verticalAlignment = CenterVertically
-    ) {
+    Row(modifier = GlanceModifier.fillMaxWidth()) {
         Text(
             text = "🔷 DeepSeek API",
-            style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium)
+            style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium),
+            modifier = GlanceModifier.defaultWeight()
         )
         Text(
             text = when {
@@ -92,112 +82,117 @@ private fun HeaderRow(state: WidgetState) {
 }
 
 @Composable
-private fun LoadingContent() {
-    Column(
-        modifier = GlanceModifier.fillMaxWidth().padding(12),
-        horizontalAlignment = Center
-    ) {
+private fun BodySection(state: WidgetState) {
+    when {
+        state.isLoading -> LoadingBlock()
+        state.hasError && !state.hasData -> ErrorBlock(state.errorMessage ?: "Error")
+        else -> BalanceBlock(state)
+    }
+}
+
+@Composable
+private fun LoadingBlock() {
+    Box(modifier = GlanceModifier.fillMaxWidth().padding(GAP_MD)) {
         Text("⏳ Loading...", style = TextStyle(color = GlassColors.statusLoading))
     }
 }
 
 @Composable
-private fun ErrorContent(message: String) {
-    Column(
-        modifier = GlanceModifier.fillMaxWidth().padding(12),
-        horizontalAlignment = Center
-    ) {
+private fun ErrorBlock(message: String) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(GAP_MD)) {
         Text("⚠️", style = TextStyle(fontWeight = FontWeight.Bold))
-        Spacer(GlanceModifier.height(4))
+        Box(GlanceModifier.height(GAP_XS + 3))
         Text(message, style = TextStyle(color = GlassColors.textSecondary), maxLines = 2)
     }
 }
 
 @Composable
-private fun BalanceContent(state: WidgetState) {
+private fun BalanceBlock(state: WidgetState) {
     val symbol = if (state.currency == "USD") "$" else "¥"
 
-    Column(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = Center
-    ) {
-        Text(
-            text = "$symbol ${state.totalBalance}",
-            style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Bold)
-        )
-        Spacer(GlanceModifier.height(2))
-        Text("Balance", style = TextStyle(color = GlassColors.textTertiary))
+    Column(modifier = GlanceModifier.fillMaxWidth()) {
+        // 余额数字
+        Box(modifier = GlanceModifier.fillMaxWidth()) {
+            Text(
+                text = "$symbol ${state.totalBalance}",
+                style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Bold)
+            )
+        }
+        Box(GlanceModifier.height(GAP_SM))
+        Box(modifier = GlanceModifier.fillMaxWidth()) {
+            Text("Balance", style = TextStyle(color = GlassColors.textTertiary))
+        }
 
-        Spacer(GlanceModifier.height(12))
+        Box(GlanceModifier.height(GAP_MD))
 
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            horizontalAlignment = SpaceEvenly
-        ) {
-            BalanceChip("Granted", state.grantedBalance, symbol)
-            BalanceChip("Top-up", state.toppedUpBalance, symbol)
+        // 细分
+        Row(modifier = GlanceModifier.fillMaxWidth()) {
+            Box(GlanceModifier.defaultWeight()) {
+                BalanceChip("Granted", state.grantedBalance, symbol)
+            }
+            Box(GlanceModifier.width(GAP_MD))
+            Box(GlanceModifier.defaultWeight()) {
+                BalanceChip("Top-up", state.toppedUpBalance, symbol)
+            }
         }
 
         if (state.lastUpdated > 0L) {
-            Spacer(GlanceModifier.height(8))
-            Text(
-                text = formatLastUpdated(state.lastUpdated),
-                style = TextStyle(color = GlassColors.textTertiary),
-                maxLines = 1
-            )
+            Box(GlanceModifier.height(GAP_LG))
+            Box(modifier = GlanceModifier.fillMaxWidth()) {
+                Text(
+                    text = formatLastUpdated(state.lastUpdated),
+                    style = TextStyle(color = GlassColors.textTertiary),
+                    maxLines = 1
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun BalanceChip(label: String, amount: String, symbol: String) {
-    Column(
+    Box(
         modifier = GlanceModifier
+            .fillMaxWidth()
             .background(GlassColors.itemBackground)
-            .cornerRadius(12)
-            .padding(horizontal = 14, vertical = 6),
-        horizontalAlignment = Center
+            .cornerRadius(RADIUS_SM)
+            .padding(horizontal = PAD_H, vertical = PAD_V)
     ) {
-        Text(
-            text = "$symbol $amount",
-            style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium)
-        )
-        Spacer(GlanceModifier.height(1))
-        Text(label, style = TextStyle(color = GlassColors.textTertiary))
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+            Text(
+                text = "$symbol $amount",
+                style = TextStyle(color = GlassColors.textPrimary, fontWeight = FontWeight.Medium)
+            )
+            Box(GlanceModifier.height(GAP_XS))
+            Text(label, style = TextStyle(color = GlassColors.textTertiary))
+        }
     }
 }
 
 @Composable
 private fun BottomRow(state: WidgetState, onRefresh: Action) {
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = SpaceBetween,
-        verticalAlignment = CenterVertically
-    ) {
-        when {
-            state.isLoading -> Text(
-                text = "⏳ Syncing",
-                style = TextStyle(color = GlassColors.textTertiary)
-            )
-            state.hasError && !state.hasData -> Text(
-                text = "⚠️ ${state.errorMessage ?: "Error"}",
-                style = TextStyle(color = GlassColors.statusUnavailable),
-                maxLines = 1
-            )
-            state.hasData -> Text(
-                text = if (state.isAvailable) "✅ Active" else "❌ Inactive",
-                style = TextStyle(
-                    color = if (state.isAvailable) GlassColors.statusAvailable
-                    else GlassColors.statusUnavailable,
-                    fontWeight = FontWeight.Medium
-                )
-            )
-            else -> Text(
-                text = "⚙️ Setup",
-                style = TextStyle(color = GlassColors.textSecondary)
-            )
-        }
-
+    Row(modifier = GlanceModifier.fillMaxWidth()) {
+        Text(
+            text = when {
+                state.isLoading -> "⏳ Syncing"
+                state.hasError && !state.hasData -> "⚠️ ${state.errorMessage ?: "Error"}"
+                state.hasData && state.isAvailable -> "✅ Active"
+                state.hasData && !state.isAvailable -> "❌ Inactive"
+                else -> "⚙️ Setup"
+            },
+            style = TextStyle(
+                color = when {
+                    state.isLoading -> GlassColors.textTertiary
+                    state.hasError && !state.hasData -> GlassColors.statusUnavailable
+                    state.hasData && state.isAvailable -> GlassColors.statusAvailable
+                    state.hasData && !state.isAvailable -> GlassColors.statusUnavailable
+                    else -> GlassColors.textSecondary
+                },
+                fontWeight = if (state.hasData) FontWeight.Medium else FontWeight.Normal
+            ),
+            maxLines = 1,
+            modifier = GlanceModifier.defaultWeight()
+        )
         Text(
             text = "🔄 Refresh",
             modifier = GlanceModifier.clickable(onRefresh),
