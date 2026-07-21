@@ -20,13 +20,27 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 设置 Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platforms;android-34
-            build-tools;34.0.0
-            platform-tools
+      - name: 安装 Android SDK
+        run: |
+          # 下载 cmdline-tools
+          curl -sL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
+            -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d /tmp
+          mkdir -p $HOME/Android/Sdk/cmdline-tools/latest
+          mv /tmp/cmdline-tools/* $HOME/Android/Sdk/cmdline-tools/latest/
+
+          # 设置环境变量
+          export ANDROID_HOME=$HOME/Android/Sdk
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+
+          # 接受许可并安装 SDK 组件
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "platform-tools"
 
       - name: 安装 Gradle 8.7
         run: |
@@ -38,7 +52,7 @@ jobs:
       - name: 构建 Debug APK
         run: gradle assembleDebug
 
-      - name: 上传 APK 到 Artifacts
+      - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: DeepSeekWidget-debug
